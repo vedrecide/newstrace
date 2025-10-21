@@ -3,7 +3,8 @@ from ddgs import DDGS
 import requests
 import logging
 from bs4 import BeautifulSoup
-import time
+
+
 
 
 logging.basicConfig(level=logging.DEBUG) 
@@ -22,8 +23,8 @@ def home():
 
 @app.route('/results')
 def search_results():
-    old_query = request.args.get("query")
-    query = old_query + " official news channel"
+    query = request.args.get("query")
+    
     if not query:
         return "No search query provided!"
 
@@ -39,7 +40,8 @@ def search_results():
     
 
     urls_list = [r['href'] for r in results]  # collect all URLs
-    print(urls_list)
+    scrape2(urls_list)
+
         
 
     html = '''
@@ -58,11 +60,52 @@ def search_results():
     '''
 
     
-    # runs only if search is complete
-    if len(results) == 5:
-        pick_best_result(results)
        
     return render_template_string(html, query=query, results=results)
+
+
+def scrape2(urls_list):
+
+    
+
+    headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                  "AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/120.0.0.0 Safari/537.36"
+}
+    #fetching the first result which dosent throw error
+    response = None
+    for url in urls_list:
+        
+        try:
+            r = requests.get(url, headers=headers, timeout=10)
+            print(f"Trying {url} -> {r.status_code}")
+            if r.ok:
+                response = r
+                break
+        except requests.RequestException as e:
+            print(f"Error fetching {url}: {e}")
+            continue 
+
+    if not response:
+        print("no valid url")
+        return
+    
+            
+        
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    links = ""
+       
+    for link in soup.find_all('a'):
+           if type(link.get('href')) == str:
+               if link.get('href').startswith("https"):
+                    links = links + "\n" + link.get('href')
+            
+    with open("links.txt", 'w') as f:
+        f.write(links)
+
 
 @app.route('/scrape')
 def scrape():
@@ -96,45 +139,9 @@ def scrape():
     '''
     return render_template_string(html, url=url, title=title, paragraphs=paragraphs)
 
-avoid_keywords = ["reddit", "youtube", "twitter", "facebook", "linkedin", "wikipedia"]
-
-def pick_best_result(results):
-    for r in results:
-        title = r["title"].lower()
-        href = r["href"].lower()
-
-        # Skip known irrelevant sites
-        if any(word in href for word in avoid_keywords):
-            continue
-        #calling scrape for first irrelevent result
-        else:
-            scrape(r["href"])
-       
-   
     
 
 
-def scrape(url):
-
-    headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/120.0.0.0 Safari/537.36"
-}
-    
-    
-    response = requests.get(url, headers=headers, timeout=10)
-
-
-    print(url)
-    html = response.text
-
-    soup = BeautifulSoup(html, 'html.parser')
-
-    print(soup)
-
-    with open("soup.txt","w") as f:
-        f.write(url + soup.prettify())
 
 
 if __name__ == '__main__':
