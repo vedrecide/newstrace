@@ -25,8 +25,8 @@ def search_results():
 
     try:
         with DDGS() as ddgs:
-            original_results = list(ddgs.text(query, max_results=8))
-            results = list(filter(lambda i: query in i["href"].split("/")[2], original_results))
+            _results = list(ddgs.text(f"{query} official site India", max_results=10))
+            results = list(filter(lambda i: query.lower().replace(" ", "") in i["href"].split("/")[2], _results))
     except Exception as e:
         return f"Error performing search: {e}"
 
