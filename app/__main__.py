@@ -35,8 +35,8 @@ def search_results():
 
     try:
         with DDGS() as ddgs:
-            original_results = list(ddgs.text(query, max_results=8))
-            results = list(filter(lambda i: query.strip() in i["href"].split("/")[2], original_results))
+            _results = list(ddgs.text(f"{query} official site India", max_results=10))
+            results = list(filter(lambda i: query.lower().replace(" ", "") in i["href"].split("/")[2], _results))
     except Exception as e:
         return f"Error performing search: {e}"
 
@@ -74,6 +74,37 @@ def search_results():
        
     return render_template_string(html, query=query, results=results)
 
+@app.route('/scrape')
+def scrape():
+    url = request.args.get('url')
+    title_from_search = request.args.get('title', 'Unknown page')
+
+    if not url:
+        return "No URL provided!"
+
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+    except Exception as e:
+        return f"Error fetching page: {e}"
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    title = soup.title.string if soup.title else title_from_search
+    paragraphs = [p.get_text(strip=True) for p in soup.find_all('p')[:5]]
+
+    html = '''
+        <h2>Scraped Page</h2>
+        <p><strong>Source:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+        <p><strong>Title:</strong> {{ title }}</p>
+        <h3>First few paragraphs:</h3>
+        <ul>
+            {% for p in paragraphs %}
+                <li>{{ p }}</li>
+            {% endfor %}
+        </ul>
+        <a href="javascript:history.back()">⬅ Back to results</a>
+    '''
+    return render_template_string(html, url=url, title=title, paragraphs=paragraphs)
 
 
 
