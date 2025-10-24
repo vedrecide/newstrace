@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewsTrace - Home</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        nav{
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            grid-template-areas: "logo menu";
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+        }
+        .logo{
+            grid-area: logo;
+            margin-left: 15%;
+            font-size: 16px;
+            font-weight: bold;
+            align-self: center;
+        }
+        ul{
+            grid-area: menu;
+            list-style-type: none;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+        ul li{
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;            
+        }
+        ul li:hover{
+            border-radius: 5px;
+            background-color: rgba(255, 36, 226, 0.537);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">NewsTrace ( Beta )</div>
+        <menu>
+            <ul>
+                <li>Home</li>
+                <li>About</li>
+                <li>Contact Us</li>
+            </ul>
+        </menu>
+    </nav>
+    <header>
+        <h1>Welcome to NewsTrace</h1>
+        <p>Your gateway to the latest news articles.</p>
+    </header>
+    <main>
+        <form action="/results" method="get">
+            <input type="text" name="query" placeholder="Enter your search query" required>
+            <button type="submit">Search</button>
+        </form>
+    </main>
+
+</body>
+</html>
