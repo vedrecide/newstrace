@@ -1,16 +1,22 @@
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string, request, render_template
 from ddgs import DDGS
-import requests
+import requests, os
 import logging
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin,urlparse
+from dotenv import load_dotenv
+from googleapiclient.discovery import build
+
 authors = []
 url_list = []
 authors_headlines = []
 seen_pairs = set()  
 
+# Load .env file
+load_dotenv()
 
-
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")
 
 logging.basicConfig(level=logging.DEBUG) 
 app = Flask(__name__)
@@ -18,56 +24,121 @@ app = Flask(__name__)
 @app.route('/')
 def home():
 
-    return '''
-        <h2>Search</h2>
-        <form action="/results" method="get">
-            <input type="text" name="query" placeholder="Search something..." style="width:300px;">
-            <button type="submit">Search</button>
-        </form>
-    '''
+    return render_template("index.html")
+
+def extract_domain(url):
+    try:
+        return urlparse(url).netloc.lower()
+    except:
+        return ""
 
 @app.route('/results')
 def search_results():
-    query = request.args.get("query")
-    
+    query = request.args.get('query')
     if not query:
         return "No search query provided!"
 
+    print(f"[DEBUG] Search query received: {query}")
+
+    results = []
+
+    # Stage-1: Try Google API search
+    print("[DEBUG] Trying Google search...")
     try:
-        with DDGS() as ddgs:
-            _results = list(ddgs.text(f"{query} official site India", max_results=10))
-            results = list(filter(lambda i: query.lower().replace(" ", "") in i["href"].split("/")[2], _results))
+        service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
+        response = service.cse().list(q=query, cx=SEARCH_ENGINE_ID, num=5).execute()
+        items = response.get("items", [])
+
+        print(f"[DEBUG] Google returned {len(items)} results.")
+
+        for r in items:
+            url = r.get("link", "")
+            title = r.get("title", "")
+            domain = extract_domain(url)
+
+            if query.lower() in domain or query.lower() in title.lower():
+                results.append({"href": url, "title": title})
+                print(f"[DEBUG] Google MATCH Found: {url}")
+                break  # Take the first strong match
     except Exception as e:
-        return f"Error performing search: {e}"
+        print(f"[ERROR] Google search failed: {e}")
+
+    # Stage-2: DuckDuckGo Fallback if no match from Google
+    if not results:
+        print("[DEBUG] Google did not return a valid match. Trying DuckDuckGo...")
+        try:
+            with DDGS() as ddgs:
+                ddg_results = list(ddgs.text(query, max_results=10))
+                print(f"[DEBUG] DuckDuckGo returned {len(ddg_results)} results.")
+
+                for item in ddg_results:
+                    if "href" not in item or "title" not in item:
+                        continue
+                    url = item["href"]
+                    title = item["title"]
+                    domain = extract_domain(url)
+
+                    if query.lower() in domain or query.lower() in title.lower():
+                        results.append({"href": url, "title": title})
+                        print(f"[DEBUG] DuckDuckGo MATCH Found: {url}")
+                        break
+        except Exception as e:
+            print(f"[ERROR] DuckDuckGo search failed: {e}")
 
     if not results:
-        return f"No results found for '{query}'."
+        return f"No results found for '{query}'. Please try again."
+
+    # Only single best result
+    result = results[0]
+    print(f"[DEBUG] Final Result: {result['href']}")
 
     html = '''
-        <h2>For "{{ query }}", Do you mean?</h2>
+        <h2>Match Found for {{ query }}</h2>
         <ol>
-            {% for r in results %}
-                <li>
-                    <a href="/scrape?url={{ r.href|urlencode }}&title={{ r.title|urlencode }}">
-                        {{ r.title }}
-                    </a><br>
-                    <small>{{ r.href }}</small>
-                </li>
-            {% endfor %}
+            <li>
+                <a href="/scrape?url={{ result.href|urlencode }}&title={{ result.title|urlencode }}">
+                    {{ result.title }}
+                </a><br>
+                <small>{{ result.href }}</small>
+            </li>
         </ol>
         <a href="/">Back</a>
     '''
 
-    print(results)
-  
-    for link in results:
-        url_list.append(link.get('href'))
+    return render_template_string(html, query=query, result=result)
 
-    
-    
+# @app.route('/scrape')
+# def scrape():
+#     url = request.args.get('url')
+#     title_from_search = request.args.get('title', 'Unknown page')
 
-       
-    return render_template_string(html, query=query, results=results)
+#     if not url:
+#         return "No URL provided!"
+
+#     try:
+#         response = requests.get(url, timeout=10)
+#         response.raise_for_status()
+#     except Exception as e:
+#         return f"Error fetching page: {e}"
+
+#     soup = BeautifulSoup(response.text, 'html.parser')
+#     title = soup.title.string if soup.title else title_from_search
+#     paragraphs = [p.get_text(strip=True) for p in soup.find_all('p')[:5]]
+
+#     html = '''
+#         <h2>Scraped Page</h2>
+#         <p><strong>Source:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+#         <p><strong>Title:</strong> {{ title }}</p>
+#         <h3>First few paragraphs:</h3>
+#         <ul>
+#             {% for p in paragraphs %}
+#                 <li>{{ p }}</li>
+#             {% endfor %}
+#         </ul>
+#         <a href="javascript:history.back()">⬅ Back to results</a>
+#     '''
+#     return render_template_string(html, url=url, title=title, paragraphs=paragraphs)
+
 
 
 
@@ -248,10 +319,6 @@ def scrape():
 
     crawl_site(url)
     return render_template_string(html, url=url, title=title, paragraphs=paragraphs)
-
-    
-
-
 
 
 if __name__ == '__main__':
