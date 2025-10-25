@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request, render_template
+from flask import Flask, render_template_string, request, render_template, url_for
 from ddgs import DDGS
 import requests, os
 import logging

@@ -1,71 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html data-theme="dark" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NewsTrace - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        *{
-            margin: 0;
-            padding: 0;
-        }
-        nav{
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            grid-template-areas: "logo menu";
-            padding: 10px 20px;
-            background-color: #333;
-            color: white;
-        }
-        .logo{
-            grid-area: logo;
-            margin-left: 15%;
-            font-size: 16px;
-            font-weight: bold;
-            align-self: center;
-        }
-        ul{
-            grid-area: menu;
-            list-style-type: none;
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            padding: 0;
-        }
-        ul li{
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 14px;            
-        }
-        ul li:hover{
-            border-radius: 5px;
-            background-color: rgba(255, 36, 226, 0.537);
+        body {
+            background-image: url({{ url_for('static', filename='bg.svg') }});
+            background-size: cover;
+            background-repeat: no-repeat;
         }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">NewsTrace ( Beta )</div>
-        <menu>
-            <ul>
-                <li>Home</li>
-                <li>About</li>
-                <li>Contact Us</li>
-            </ul>
-        </menu>
-    </nav>
-    <header>
-        <h1>Welcome to NewsTrace</h1>
-        <p>Your gateway to the latest news articles.</p>
-    </header>
+    <div class="navbar bg-neutral text-neutral-content">
+        <button class="btn btn-ghost text-xl">Newstrace</button>
+    </div>
     <main>
-        <form action="/results" method="get">
-            <input type="text" name="query" placeholder="Enter your search query" required>
-            <button type="submit">Search</button>
-        </form>
-    </main>
+        <div class="hero bg-base-400 min-h-screen">
+            <div class="hero-content text-center">
+                <div class="max-w-md">
+                    <h1 class="text-6xl font-bold">NewsTrace</h1>
+                    <p class="py-8">
+                        A media intelligence and journalist profiling system.
+                    </p>
+                    <label class="swap swap-rotate">
+                    <!-- <form action="/results" method="get">
+                        <fieldset class="fieldset">
+                            <input type="text" name="query" class="input" placeholder="Your search query goes here" required>
+                            <p class="label">Required</p>
+                            <button type="submit">Search</button>
+                        </fieldset>
+                    </form> -->
+                    <!-- <div class="join"> -->
+                        <form class="join" action="/results" method="GET">
+                        <div>
+                            <label class="input validator join-item">
+                                <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <g
+                                    stroke-linejoin="round"
+                                    stroke-linecap="round"
+                                    stroke-width="2.5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                >
+                                    <!-- right link -->
+                                    <path d="M16.5 7.5a3.5 3.5 0 0 1 0 4.95l-2.95 2.95a3.5 3.5 0 0 1-4.95-4.95l1.4-1.4"/>
+                                    <!-- left link -->
+                                    <path d="M7.5 16.5a3.5 3.5 0 0 1 0-4.95l2.95-2.95a3.5 3.5 0 0 1 4.95 4.95l-1.4 1.4"/>
+                                    <!-- connecting overlap accent -->
+                                    <path d="M9.5 14.5l5-5"/>
+                                </g>
+                                </svg>
 
+                            <input type="text" class="p-4" name="query" placeholder="Query here." required />
+                            </label>
+                            <div class="validator-hint hidden">Enter valid search query.</div>
+                        </div>
+                            <button type="submit" class="btn btn-neutral join-item">Submit</button>
+                        </form>
+                    <!-- </div> -->
+                </div>
+            </div>
+        </div>
+    </main>
 </body>
 </html>
