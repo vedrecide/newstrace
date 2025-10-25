@@ -6,6 +6,10 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin,urlparse
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
+import random
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 authors = []
 url_list = []
@@ -142,6 +146,7 @@ def search_results():
 
 
 
+
 def scrape_article(article_url):
     """
     Scrape a single article page:
@@ -164,7 +169,6 @@ def scrape_article(article_url):
     try:
         resp = requests.get(article_url, headers=headers, timeout=10)
         if not resp.ok:
-            print("Failed to fetch:", article_url)
             return
 
         soup = BeautifulSoup(resp.text, "html.parser")
@@ -183,7 +187,6 @@ def scrape_article(article_url):
                 headline = og_title["content"].strip()
 
         if not headline:
-            print("No headline found:", article_url)
             return
 
         # --- Find authors ---
@@ -193,20 +196,19 @@ def scrape_article(article_url):
         for tag in soup.find_all("a", href=True):
             if "/authors" in tag["href"]:
                 text = tag.get_text(strip=True)
-                if 2 <= len(text.split()) <= 5: # likely a person name
+                if 2 <= len(text.split()) <= 5: 
                     text_clean = text.strip()
                     if any(name.lower() in text_clean.lower() for name in avoid_names):
-                        continue  # skip
+                        continue
 
-
-        # common author classes
+        # common author classes + divs
         candidate_classes = ["author", "byline", "writer", "contributor", "person-name"]
         for tag in soup.find_all(["a", "span", "div"], class_=lambda c: c and any(x in c.lower() for x in candidate_classes)):
             text = tag.get_text(strip=True)
-            if 2 <= len(text.split()) <= 5:  # likely a person name
+            if 2 <= len(text.split()) <= 5: 
                 text_clean = text.strip()
                 if any(name.lower() in text_clean.lower() for name in avoid_names):
-                        continue  # skip
+                        continue
 
         # Meta author fallback
         meta_author = soup.find("meta", {"name": "author"})
@@ -214,27 +216,28 @@ def scrape_article(article_url):
             authors.add(meta_author["content"].strip())
 
         if not authors:
-            print("No authors found:", article_url)
             return
 
         # Write unique pairs
-        with open("authors_headlines.txt", "a", encoding="utf-8") as f:
-            for author in authors:
-                pair = (author, headline)
-                if pair not in seen_pairs:
-                    seen_pairs.add(pair)
-                    f.write(f"{author} || {headline}\n")
-                    print("Saved:", author, "||", headline)
+        with threading.Lock():
+            with open("authors_headlines.txt", "a", encoding="utf-8") as f:
+                for author in authors:
+                    pair = (author, headline)
+                    if pair not in seen_pairs:
+                        seen_pairs.add(pair)
+                        f.write(f"{author} || {headline}\n")
+                        print("Saved:", author, "||", headline)
 
     except Exception as e:
         print("Error scraping article:", article_url, e)
 
 
-def crawl_site(home_url, max_authors=30):
+def crawl_site(home_url, max_authors=30, max_threads=10):
     """
-    Crawl a news site starting from home_url.
-    - Collect internal article links
-    - Scrapes until max_authors unique author-headline pairs are reached
+    Threaded crawler:
+    - Uses ThreadPoolExecutor for concurrent fetching
+    - Collects internal article links
+    - Stops when max_authors unique author-headline pairs are reached
     """
     headers = {
         "User-Agent": (
@@ -247,37 +250,50 @@ def crawl_site(home_url, max_authors=30):
     visited = set()
     to_visit = [home_url]
     base_domain = urlparse(home_url).netloc
+    lock = threading.Lock()
 
-    while to_visit and len(seen_pairs) < max_authors:
-        current_url = to_visit.pop(0)
-        if current_url in visited:
-            continue
-        visited.add(current_url)
+    def worker(url):
+        # Random sleep to avoid hitting server too fast
+        time.sleep(random.uniform(0.5, 1.5))
 
-        # Skip obvious non-article pages
-        skip_keywords = ["about", "contact", "privacy", "terms", "advertise", "subscribe"]
-        if any(kw in current_url.lower() for kw in skip_keywords):
-            continue
+        with lock:
+            if url in visited:
+                return
+            visited.add(url)
 
         try:
-            resp = requests.get(current_url, headers=headers, timeout=10)
+            resp = requests.get(url, headers=headers, timeout=10)
             if not resp.ok:
-                continue
+                return
             soup = BeautifulSoup(resp.text, "html.parser")
 
             # Collect internal links
+            new_links = []
             for a in soup.find_all("a", href=True):
                 full_url = urljoin(home_url, a["href"])
                 parsed = urlparse(full_url)
                 if parsed.netloc == base_domain and full_url not in visited and full_url.startswith(("http://", "https://")):
-                    to_visit.append(full_url)
+                    new_links.append(full_url)
+
+            with lock:
+                to_visit.extend(new_links)
 
             # Scrape the current page
-            scrape_article(current_url)
+            scrape_article(url)
 
         except Exception as e:
-            print("Error visiting page:", current_url, e)
-            continue
+            print("Error visiting page:", url, e)
+
+    while to_visit and len(seen_pairs) < max_authors:
+        # Take a snapshot of URLs to process
+        with lock:
+            urls_batch = to_visit[:max_threads]
+            to_visit[:max_threads] = []
+
+        with ThreadPoolExecutor(max_threads) as executor:
+            futures = [executor.submit(worker, u) for u in urls_batch]
+            for _ in as_completed(futures):
+                pass  # just wait for all to finish
 
     print(f"Finished. Collected {len(seen_pairs)} unique author-headline pairs.")
     visited.clear()
