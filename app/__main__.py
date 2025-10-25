@@ -46,7 +46,6 @@ def search_results():
 
     results = []
 
-    # Stage-1: Try Google API search
     print("[DEBUG] Trying Google search...")
     try:
         service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
@@ -63,11 +62,10 @@ def search_results():
             if query.lower() in domain or query.lower() in title.lower():
                 results.append({"href": url, "title": title})
                 print(f"[DEBUG] Google MATCH Found: {url}")
-                break  # Take the first strong match
+                break
     except Exception as e:
         print(f"[ERROR] Google search failed: {e}")
 
-    # Stage-2: DuckDuckGo Fallback if no match from Google
     if not results:
         print("[DEBUG] Google did not return a valid match. Trying DuckDuckGo...")
         try:
@@ -92,7 +90,6 @@ def search_results():
     if not results:
         return f"No results found for '{query}'. Please try again."
 
-    # Only single best result
     result = results[0]
     print(f"[DEBUG] Final Result: {result['href']}")
 
@@ -111,41 +108,8 @@ def search_results():
 
     return render_template_string(html, query=query, result=result)
 
-# @app.route('/scrape')
-# def scrape():
-#     url = request.args.get('url')
-#     title_from_search = request.args.get('title', 'Unknown page')
 
-#     if not url:
-#         return "No URL provided!"
-
-#     try:
-#         response = requests.get(url, timeout=10)
-#         response.raise_for_status()
-#     except Exception as e:
-#         return f"Error fetching page: {e}"
-
-#     soup = BeautifulSoup(response.text, 'html.parser')
-#     title = soup.title.string if soup.title else title_from_search
-#     paragraphs = [p.get_text(strip=True) for p in soup.find_all('p')[:5]]
-
-#     html = '''
-#         <h2>Scraped Page</h2>
-#         <p><strong>Source:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
-#         <p><strong>Title:</strong> {{ title }}</p>
-#         <h3>First few paragraphs:</h3>
-#         <ul>
-#             {% for p in paragraphs %}
-#                 <li>{{ p }}</li>
-#             {% endfor %}
-#         </ul>
-#         <a href="javascript:history.back()">⬅ Back to results</a>
-#     '''
-#     return render_template_string(html, url=url, title=title, paragraphs=paragraphs)
-
-
-
-
+#Stage 1 i.e. Scrapping Starts
 
 def scrape_article(article_url):
     """
@@ -336,6 +300,10 @@ def scrape():
     crawl_site(url)
     return render_template_string(html, url=url, title=title, paragraphs=paragraphs)
 
+# Scrapping Part i.e. Stage 1 Ends Here
+
+# For The Next Part I am gonna take some dummy data as the Stage 1 can't extract enough data to procedd
+# Stage 2 and onwards
 
 if __name__ == '__main__':
     app.run(debug=True)
