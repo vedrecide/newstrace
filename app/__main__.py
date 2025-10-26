@@ -173,7 +173,7 @@ def download_csv(filename):
     return send_file(csv_path, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
     
 
     
