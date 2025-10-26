@@ -12,6 +12,8 @@ from urllib.parse import urljoin, urlparse, parse_qs, urlencode
 
 import requests
 from bs4 import BeautifulSoup
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # NLP Libraries (optional)
 try:
@@ -63,7 +65,7 @@ def extract_keywords_fallback(text):
                   'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
                   'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those'}
     words = re.findall(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b|\b[a-z]{4,}\b', text)
-    filtered_words = [w.title() for w in words if w.lower() not in stop_words and len(w) > 3]
+    filtered_words = [w.title() for w in words if w.lower() not in   stop_words and len(w) > 3]
     word_freq = Counter(filtered_words)
     return [word for word, _ in word_freq.most_common(10)]
 
@@ -187,15 +189,14 @@ def scrape_article(article_url, outlet_name, outlet_domain):
     response = None
     for attempt in range(max_retries):
         try:
-            response = requests.get(
-                article_url, headers=headers, timeout=10, allow_redirects=True
-            )
-            if response.status_code == 200:
+            response = http_get(article_url, headers=headers, timeout=10, allow_redirects=True)
+            if response and response.status_code == 200:
                 break
-            elif response.status_code == 403:
+            elif response and response.status_code == 403:
                 headers["User-Agent"] = random.choice(USER_AGENTS)
                 time.sleep(0.5)
-        except:
+        except Exception as e:
+            logger.debug(f"[scrape_article] request attempt failed: {e}")
             if attempt < max_retries - 1:
                 time.sleep(0.5)
     if not response or response.status_code != 200:
@@ -206,16 +207,28 @@ def scrape_article(article_url, outlet_name, outlet_domain):
     try:
         for script in soup.find_all("script", type="application/ld+json"):
             try:
-                data = json.loads(script.string)
+                txt = script.string or script.get_text() or ""
+                txt = txt.strip()
+                if not txt:
+                    continue
+                # primary attempt
+                try:
+                    data = json.loads(txt)
+                except Exception:
+                    # fallback: try to extract the first JSON object from the script text
+                    m = re.search(r'(\{.*\})', txt, flags=re.S)
+                    data = json.loads(m.group(1)) if m else {}
                 if isinstance(data, list):
                     data = data[0] if data else {}
                 if isinstance(data, dict):
                     headline = data.get("headline") or data.get("name")
                     if headline and len(headline.split()) > 3:
                         break
-            except:
+            except Exception as e:
+                logger.debug(f"[scrape_article] ld+json parse skipped: {e}")
                 continue
-    except:
+    except Exception as e:
+        logger.debug(f"[scrape_article] ld+json outer error: {e}")
         pass
     if not headline:
         for prop in ["og:title", "twitter:title"]:
@@ -372,6 +385,23 @@ def scrape_article(article_url, outlet_name, outlet_domain):
                 except Exception as e:
                     logger.error(f"CSV write error: {e}")
 
+# Create a shared session with retries to improve throughput and reliability
+SESSION = requests.Session()
+_retry = Retry(total=3, backoff_factor=0.3, status_forcelist=(429, 500, 502, 503, 504))
+_adapter = HTTPAdapter(max_retries=_retry)
+SESSION.mount("http://", _adapter)
+SESSION.mount("https://", _adapter)
+
+def http_get(url, headers=None, timeout=10, allow_redirects=True):
+    """Thread-safe helper using SESSION with retries. Returns Response or None."""
+    try:
+        hdrs = headers or {"User-Agent": random.choice(USER_AGENTS)}
+        resp = SESSION.get(url, headers=hdrs, timeout=timeout, allow_redirects=allow_redirects)
+        return resp
+    except Exception as e:
+        logger.debug(f"[http_get] {url} failed: {e}")
+        return None
+
 def crawl_site(home_url, outlet_name="Unknown", max_articles=100, max_threads=12, max_depth=4):
     """
     Optimized crawler that uses scrape_article(...) and updates domain_data.
@@ -426,22 +456,23 @@ def crawl_site(home_url, outlet_name="Unknown", max_articles=100, max_threads=12
                 return
             visited_urls.add(url)
         try:
-            response = requests.get(
+            response = http_get(
                 url,
                 headers={"User-Agent": random.choice(USER_AGENTS)},
                 timeout=10,
                 allow_redirects=True
             )
-            if response.status_code != 200:
+            if not response or response.status_code != 200:
                 with lock:
                     failed_urls.add(url)
                 return
             content_type = response.headers.get('Content-Type', '').lower()
             if 'text/html' not in content_type:
                 return
-        except:
+        except Exception as e:
             with lock:
                 failed_urls.add(url)
+            logger.debug(f"[crawl_site] fetch failed {url}: {e}")
             return
         soup = BeautifulSoup(response.text, "html.parser")
         found_links = []
