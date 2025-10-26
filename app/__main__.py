@@ -4,6 +4,7 @@ from ddgs import DDGS
 import logging
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
+from datetime import datetime
 
 # small local imports used by routes
 import requests
@@ -233,5 +234,41 @@ def check_status():
         logger.error(f"Status check failed: {e}")
         return jsonify({"ready": False})
 
+@app.route("/get_latest_data")
+def get_latest_data():
+    """Get the latest journalist data for real-time updates.
+    
+    Returns:
+        JSON with latest journalists data and metadata
+    """
+    csv_file = request.args.get("csv")
+    if not csv_file:
+        return jsonify({"error": "No CSV file specified"}), 400
+        
+    try:
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        csv_path = os.path.join(base_dir, csv_file)
+        
+        if not os.path.exists(csv_path):
+            return jsonify({"error": "CSV file not found"}), 404
+            
+        output, _ = csv_to_journalist_json(csv_path)
+        journalists_dict = output.get("journalists", {})
+        
+        return jsonify({
+            "journalists_dict": journalists_dict,
+            "top_contributors": output.get("top_contributors", []),
+            "graph_img": build_bipartite_graph(journalists_dict) if journalists_dict else None,
+            "total_journalists": len(journalists_dict),
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Failed to get latest data: {e}")
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
-    app.run(debug=DEBUG, host='0.0.0.0', port=5000)
+    if not DEBUG:
+        app.run(debug=DEBUG, host='0.0.0.0', port=5000)
+    else:
+        app.run(debug=False)

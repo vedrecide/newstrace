@@ -1,0 +1,574 @@
+{
+    "journalists": {
+        "Adwitiya Deb": {
+            "article_count": 1,
+            "keywords": {
+                "Thousands": 1,
+                "Migrants": 1,
+                "Return": 1,
+                "Bihar": 1,
+                "Chhath": 1,
+                "Upcoming": 1,
+                "Elections": 1
+            },
+            "topics": {
+                "Politics": 1
+            }
+        },
+        "Amisha Pandey": {
+            "article_count": 1,
+            "keywords": {
+                "What": 1,
+                "Happened": 1,
+                "Cam Skattebo": 1,
+                "Giants": 1,
+                "Carted": 1,
+                "Scary": 1,
+                "Injury": 1,
+                "Full": 1,
+                "Details": 1,
+                "Season": 1
+            },
+            "topics": {
+                "Technology": 1
+            }
+        },
+        "BB Goswami": {
+            "article_count": 1,
+            "keywords": {
+                "Cachar": 1,
+                "Admin": 1,
+                "Assesses": 1,
+                "Routes": 1,
+                "Capital Point": 1,
+                "Rangirkhari": 1,
+                "Link": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "Biswendu Bhattacharjee": {
+            "article_count": 4,
+            "keywords": {
+                "Detains": 1,
+                "Bangladeshis": 1,
+                "Ambassa Railway Station": 1,
+                "Tripura": 2,
+                "Dhalai": 1,
+                "District": 1,
+                "Agartala": 1,
+                "Bagdogra": 1,
+                "Daily": 1,
+                "Direct": 1,
+                "Flights": 1,
+                "Launched": 1,
+                "Link": 1,
+                "Silchar": 1,
+                "Resume": 1,
+                "After": 2,
+                "Launches": 1,
+                "Samriddhi Abhiyan": 1,
+                "Uplift": 1,
+                "Lakh": 1,
+                "Rural": 1,
+                "Women": 1,
+                "Gets": 1,
+                "Lease": 1,
+                "Life": 1,
+                "Surgery": 1,
+                "Tripura Medical College": 1
+            },
+            "topics": {
+                "Technology": 2,
+                "General": 1,
+                "Health": 1,
+                "Education": 1
+            }
+        },
+        "Debarati S Sen": {
+            "article_count": 1,
+            "keywords": {
+                "Sunny Kaushal": 1,
+                "Vicky": 1,
+                "Used": 1,
+                "Fight": 1,
+                "Over": 1,
+                "Most": 1,
+                "Ridiculous": 1,
+                "Things": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "FLAVIO LOPES": {
+            "article_count": 1,
+            "keywords": {
+                "Trijoy": 1,
+                "Looks": 1,
+                "Find": 1,
+                "Feet": 1,
+                "Club": 1,
+                "Gokulam Kerala": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "Faryal Rumi": {
+            "article_count": 2,
+            "keywords": {
+                "Anant Singh": 1,
+                "Escapes": 1,
+                "Unhurt": 1,
+                "After": 1,
+                "Stage": 1,
+                "Collapses": 1,
+                "During": 1,
+                "Campaign": 1,
+                "Mokama": 1,
+                "Ghats": 1,
+                "Abuzz": 1,
+                "Families": 1,
+                "Unite": 1,
+                "Chhath": 1,
+                "Rituals": 1,
+                "Offerings": 1
+            },
+            "topics": {
+                "Technology": 1,
+                "General": 1
+            }
+        },
+        "Govind Kamat Maad": {
+            "article_count": 1,
+            "keywords": {
+                "Abuse": 1,
+                "Applause": 1,
+                "The Konkani": 1,
+                "Year": 1,
+                "Rise": 1
+            },
+            "topics": {
+                "Technology": 1
+            }
+        },
+        "HC Vanlalruata": {
+            "article_count": 1,
+            "keywords": {
+                "Study": 1,
+                "Ranks": 1,
+                "Mizoram": 1,
+                "Least": 1,
+                "Corrupted": 1,
+                "State": 1,
+                "Country": 1,
+                "After": 1,
+                "Lakshadweep": 1,
+                "Lalduhoma": 1
+            },
+            "topics": {
+                "International": 1
+            }
+        },
+        "Joken Ete": {
+            "article_count": 1,
+            "keywords": {
+                "Assam": 1,
+                "Stresses": 1,
+                "Preserving": 1,
+                "Culture": 1,
+                "Identity": 1,
+                "Tani": 1,
+                "Fest": 1,
+                "Lekang": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "Kangkan Kalita": {
+            "article_count": 1,
+            "keywords": {
+                "Mela": 1,
+                "Lens": 1,
+                "Preserving": 1,
+                "Traditions": 1,
+                "Brokpa": 1,
+                "Community": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "Korean Wave": {
+            "article_count": 1,
+            "keywords": {
+                "The Times": 1,
+                "India": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "Kumod Verma": {
+            "article_count": 1,
+            "keywords": {
+                "Chhath": 1,
+                "Devotees": 1,
+                "Turn": 1,
+                "Rooftops": 1,
+                "Artificial": 1,
+                "Ponds": 1,
+                "Rituals": 1
+            },
+            "topics": {
+                "Politics": 1
+            }
+        },
+        "Mahima Roy": {
+            "article_count": 1,
+            "keywords": {
+                "Dragged": 1,
+                "Resurfaced": 1,
+                "Moment": 1,
+                "Taylor Swift": 1,
+                "Sparks": 1,
+                "Outrage": 1,
+                "Fans": 1,
+                "Gush": 1,
+                "Over": 1,
+                "Travis": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "Manosh Das": {
+            "article_count": 1,
+            "keywords": {
+                "Founding": 1,
+                "Meghalaya Captain Sangma": 1,
+                "Remembered": 1
+            },
+            "topics": {
+                "Technology": 1
+            }
+        },
+        "Murari Shetye": {
+            "article_count": 3,
+            "keywords": {
+                "Over": 2,
+                "Victims": 1,
+                "Digital": 1,
+                "Arrest": 1,
+                "Citizens": 1,
+                "Police": 2,
+                "Cops": 1,
+                "Kids": 1,
+                "Faked": 1,
+                "Kidnap": 1,
+                "Cases": 1,
+                "Fear": 1,
+                "School": 1,
+                "Stress": 1,
+                "Personal": 1,
+                "Issues": 1,
+                "Held": 1,
+                "Groups": 1,
+                "Fight": 1,
+                "Outside": 1,
+                "Panaji": 1,
+                "Taxi": 1,
+                "Business": 1
+            },
+            "topics": {
+                "Technology": 1,
+                "Crime": 2,
+                "Education": 1,
+                "Economy": 1
+            }
+        },
+        "Neeraj Dhankher": {
+            "article_count": 1,
+            "keywords": {
+                "Horoscope Today": 1,
+                "October": 1,
+                "Mars Transit": 1,
+                "Scorpio": 1,
+                "Chhath Puja": 1,
+                "Bring": 1,
+                "Power": 1,
+                "Shifts": 1,
+                "Zodiac": 1,
+                "Signs": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "Nida Sayed": {
+            "article_count": 2,
+            "keywords": {
+                "Records": 1,
+                "Above": 1,
+                "Normal": 1,
+                "Rainfall": 1,
+                "Weather": 1,
+                "Similar": 1,
+                "Peak": 1,
+                "Monsoon": 1,
+                "Months": 1,
+                "Fisherfolk": 1,
+                "Halt": 1,
+                "Water": 1,
+                "Sports": 1,
+                "Event": 1,
+                "Caranzalem": 1
+            },
+            "topics": {
+                "Technology": 1,
+                "Sports": 1
+            }
+        },
+        "Rahul Singh": {
+            "article_count": 1,
+            "keywords": {
+                "Yogi Adityanath": 1,
+                "Reviews": 1,
+                "Kartik Mela": 1,
+                "Arrangements": 1,
+                "Hapur": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "Rajib Dutta": {
+            "article_count": 1,
+            "keywords": {
+                "Lakhimpur": 1,
+                "Admin": 1,
+                "Plans": 1,
+                "Plant": 1,
+                "Saplings": 1,
+                "Revive": 1,
+                "Sericulture": 1,
+                "Dist": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "RaunakÂ Bose": {
+            "article_count": 1,
+            "keywords": {
+                "Is Giannis Antetokounmpo": 1,
+                "Playing": 1,
+                "Tonight": 1,
+                "Against": 1,
+                "Cleveland Cavaliers": 1,
+                "Latest": 1,
+                "Update": 1,
+                "Milwaukee Bucks": 1,
+                "Star": 1,
+                "Injury": 1
+            },
+            "topics": {
+                "Technology": 1
+            }
+        },
+        "Sanjay Khajuria": {
+            "article_count": 1,
+            "keywords": {
+                "Lodged": 1,
+                "After": 1,
+                "Villagers": 1,
+                "Kathua": 1,
+                "Allege": 1,
+                "Religious": 1,
+                "Conversion": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "Sharad Chandra": {
+            "article_count": 1,
+            "keywords": {
+                "Dhanbad": 1,
+                "Inspects": 1,
+                "Home": 1,
+                "Chhath": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        },
+        "Sourav Modak": {
+            "article_count": 1,
+            "keywords": {
+                "Services": 1,
+                "Shortest": 1,
+                "Ranji": 1,
+                "Match": 1,
+                "Ever": 1,
+                "Against": 1,
+                "Assam": 1
+            },
+            "topics": {
+                "Technology": 1,
+                "Sports": 1
+            }
+        },
+        "TOI Science Desk": {
+            "article_count": 1,
+            "keywords": {
+                "Startup": 1,
+                "Plans": 1,
+                "Launch": 1,
+                "Giant": 1,
+                "Mirrors": 1,
+                "Into": 1,
+                "Space": 1,
+                "Reason": 1,
+                "Surprise": 1
+            },
+            "topics": {
+                "Technology": 1
+            }
+        },
+        "TOI Tech Desk": {
+            "article_count": 1,
+            "keywords": {
+                "Halo": 1,
+                "Xbox": 1,
+                "Franchise": 1,
+                "Jumps": 1,
+                "After": 1,
+                "Years": 1,
+                "Campaign Evolved": 1
+            },
+            "topics": {
+                "Technology": 1
+            }
+        },
+        "TOI Trending Desk": {
+            "article_count": 1,
+            "keywords": {
+                "Viral": 1,
+                "Video": 1,
+                "What": 1,
+                "Happens": 1,
+                "When": 1,
+                "Light": 1,
+                "Matchstick": 1,
+                "Space": 1,
+                "Chinese": 1,
+                "Astronauts": 1
+            },
+            "topics": {
+                "Technology": 1,
+                "Sports": 1
+            }
+        },
+        "TOI World Desk": {
+            "article_count": 3,
+            "keywords": {
+                "John": 1,
+                "Laura Arnold": 1,
+                "Billionaire": 1,
+                "Couple": 1,
+                "Donates": 1,
+                "Nearly": 1,
+                "Half": 1,
+                "Their": 1,
+                "Billion": 1,
+                "Fortune": 1,
+                "Wage": 1,
+                "Based": 1,
+                "Selection": 1,
+                "American Hospital Association": 1,
+                "Says": 1,
+                "Rural": 1,
+                "Hospitals": 1,
+                "Suffer": 1,
+                "Donald Trump": 1,
+                "Wants": 1,
+                "Golden Fleet": 1,
+                "Fight": 1,
+                "China": 1,
+                "Because": 1,
+                "Hates": 1,
+                "Ugly": 1,
+                "Ships": 1,
+                "Report": 1
+            },
+            "topics": {
+                "Technology": 1,
+                "Health": 1,
+                "Politics": 1,
+                "General": 1
+            }
+        },
+        "Tathagata Bhattacharjee": {
+            "article_count": 1,
+            "keywords": {
+                "Chhath Puja": 1,
+                "Sales": 1,
+                "Guwahati": 1,
+                "Many": 1,
+                "Head": 1,
+                "Home": 1,
+                "Celebrate": 1,
+                "Families": 1
+            },
+            "topics": {
+                "General": 1
+            }
+        }
+    },
+    "top_contributors": [
+        {
+            "name": "Biswendu Bhattacharjee",
+            "article_count": 4
+        },
+        {
+            "name": "Murari Shetye",
+            "article_count": 3
+        },
+        {
+            "name": "TOI World Desk",
+            "article_count": 3
+        },
+        {
+            "name": "Faryal Rumi",
+            "article_count": 2
+        },
+        {
+            "name": "Nida Sayed",
+            "article_count": 2
+        },
+        {
+            "name": "Adwitiya Deb",
+            "article_count": 1
+        },
+        {
+            "name": "Amisha Pandey",
+            "article_count": 1
+        },
+        {
+            "name": "BB Goswami",
+            "article_count": 1
+        },
+        {
+            "name": "Debarati S Sen",
+            "article_count": 1
+        },
+        {
+            "name": "FLAVIO LOPES",
+            "article_count": 1
+        }
+    ]
+}

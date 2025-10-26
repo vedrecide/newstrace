@@ -227,4 +227,99 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+{% if journalists_dict %}
+  <script>
+    let lastJournalistCount = {{ journalists_dict|length }};
+    
+    function updateDashboard(data) {
+      // Update top contributors
+      const topContribList = document.querySelector('.top-contributors-list');
+      if (topContribList && data.top_contributors) {
+        topContribList.innerHTML = data.top_contributors.map(t => 
+          `<div class="flex items-center gap-3 p-3 bg-base-100 rounded-lg shadow-sm">
+            <div class="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-primary-content font-bold text-lg">
+              ${t.name[0].toUpperCase()}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold truncate">${t.name}</div>
+              <div class="text-sm opacity-60">${t.article_count} articles</div>
+            </div>
+          </div>`
+        ).join('');
+      }
+
+      // Update journalists table
+      const tbody = document.querySelector('#journalists-table tbody');
+      if (tbody && data.journalists_dict) {
+        tbody.innerHTML = Object.entries(data.journalists_dict).map(([name, info]) => `
+          <tr class="odd:bg-base-100">
+            <td class="px-4 py-3 align-top name-cell">
+              <div class="font-medium break-words">${name}</div>
+            </td>
+            <td class="px-4 py-3 align-top">
+              <div>${info.article_count || 0}</div>
+            </td>
+            <td class="px-4 py-3 align-top topics-cell">
+              <div class="text-sm leading-snug break-words">
+                ${Object.entries(info.topics || {})
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 3)
+                  .map(([k, v]) => `${k}(${v})`)
+                  .join(', ')}
+              </div>
+            </td>
+            <td class="px-4 py-3 align-top keywords-cell">
+              <div class="text-sm leading-snug break-words">
+                ${Object.entries(info.keywords || {})
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 5)
+                  .map(([k, v]) => `${k}(${v})`)
+                  .join(', ')}
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Update graph if new one available
+      if (data.graph_img) {
+        const graphImg = document.querySelector('#journalist-graph');
+        if (graphImg) {
+          graphImg.src = `data:image/png;base64,${data.graph_img}`;
+        }
+      }
+
+      // Update stats
+      if (data.total_journalists > lastJournalistCount) {
+        const toast = document.getElementById('update-toast');
+        if (toast) {
+          toast.textContent = `Found ${data.total_journalists - lastJournalistCount} new journalists!`;
+          toast.classList.remove('hidden');
+          setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+        lastJournalistCount = data.total_journalists;
+      }
+    }
+
+    // Poll for updates every 10 seconds if we have some initial data
+    setInterval(() => {
+      fetch(`/get_latest_data?csv={{ csv_file }}`)
+        .then(response => response.json())
+        .then(data => {
+          if (!data.error) {
+            updateDashboard(data);
+          }
+        })
+        .catch(console.error);
+    }, 10000);
+  </script>
+
+  <!-- Add toast notification -->
+  <div id="update-toast" class="toast toast-end">
+    <div class="alert alert-success">
+      <span></span>
+    </div>
+  </div>
+{% else %}
+{% endif %}
 {% endblock %}
