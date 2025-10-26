@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Journalists{% endblock %}
+
+{% block hero %}
+<main class="min-h-screen bg-base-100 py-8">
+  <div class="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-base-200 p-4 sm:p-8 rounded-lg shadow">
+      <h1 class="bg-linear-to-r from-violet-500 to-white bg-clip-text text-5xl font-extrabold text-transparent text-center mb-4">
+        Journalists — {{ outlet_name }}
+      </h1>
+      <p class="text-sm sm:text-base text-center mb-6">Source: <a href="{{ source_url }}" target="_blank" class="link break-words">{{ source_url }}</a></p>
+
+      {% if journalists_dict %}
+        <section class="mb-6">
+          <h2 class="text-3xl sm:text-2xl font-semibold mb-2">Top Contributors</h2>
+
+          <!-- Responsive card/grid list for top contributors -->
+          <div class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2">
+            {% for t in top_contributors or [] %}
+              <div class="flex items-center gap-3 p-3 bg-base-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                <!-- avatar (first letter) -->
+                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-primary-content font-bold text-lg flex-shrink-0">
+                  {{ (t.name[0] if t.name) | upper }}
+                </div>
+
+                <!-- name + meta -->
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold truncate">{{ t.name }}</div>
+                  <div class="text-sm text-base-content/60 truncate">Top beat: {{ t.get('top_topic','General') }}</div>
+                </div>
+
+                <!-- badge / count -->
+                <div class="ml-3">
+                  <span class="badge badge-outline badge-lg">{{ t.article_count }} <span class="hidden sm:inline">articles</span></span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <!-- Search bar + meta -->
+        <section class="mb-4">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <label for="journalist-search" class="sr-only">Search journalists</label>
+              <div class="form-control w-full">
+                <div class="input-group flex items-start py-4">
+                  <input id="journalist-search" type="search" placeholder="Search" class="input input-bordered w-full max-w-xl pr-6" />
+                  <button id="clear-search" class="btn btn-ghost" title="Clear search">✕</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-sm text-base-content/60">
+              <span id="results-count" class="font-medium">Showing {{ journalists_dict|length }} results</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h2 class="text-xl sm:text-2xl font-semibold mb-3 text-center sm:text-left">Journalists Table</h2>
+
+          <!-- responsive wrapper: allows horizontal scroll on small screens -->
+          <div class="overflow-x-auto -mx-4 sm:-mx-0 px-4 sm:px-0">
+            <table id="journalists-table" class="min-w-full table-auto w-full border-collapse">
+              <thead class="bg-base-300">
+                <tr>
+                  <th class="text-left px-4 py-2">Name</th>
+                  <th class="text-left px-4 py-2">Articles</th>
+                  <th class="text-left px-4 py-2">Top Topics</th>
+                  <th class="text-left px-4 py-2">Top Keywords</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for name, info in journalists_dict.items() %}
+                  <tr class="odd:bg-base-100">
+                    <td class="px-4 py-3 align-top name-cell">
+                      <div class="font-medium break-words">{{ name }}</div>
+                    </td>
+                    <td class="px-4 py-3 align-top">
+                      <div>{{ info.get('article_count', 0) }}</div>
+                    </td>
+                    <td class="px-4 py-3 align-top topics-cell">
+                      {% set topics = info.get('topics', {}) %}
+                      {% set topics_slice = (topics|dictsort(true, 'value'))[:3] %}
+                      <div class="text-sm leading-snug break-words">
+                        {% for k, v in topics_slice %}
+                          <span class="inline-block mr-2">{{ k }} ({{ v }}){% if not loop.last %},{% endif %}</span>
+                        {% endfor %}
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 align-top keywords-cell">
+                      {% set keywords = info.get('keywords', {}) %}
+                      {% set keywords_slice = (keywords|dictsort(true, 'value'))[:5] %}
+                      <div class="text-sm leading-snug break-words">
+                        {% for k, v in keywords_slice %}
+                          <span class="inline-block mr-2">{{ k }} ({{ v }}){% if not loop.last %},{% endif %}</span>
+                        {% endfor %}
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {% if graph_img %}
+          <section class="mb-6">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-3">Journalist-Topic Graph</h2>
+            <div class="w-full overflow-hidden rounded">
+              <img src="data:image/png;base64,{{ graph_img }}" alt="graph" class="w-full h-auto max-h-250 object-contain" />
+            </div>
+          </section>
+        {% endif %}
+
+      {% else %}
+        <section class="mb-6 text-center">
+          <h2 class="text-3xl font-semibold">Scraping started</h2>
+          <p class="text-sm sm:text-base break-words">CSV file: <code>{{ csv_file }}</code></p>
+          <p class="text-sm sm:text-base">Scraping is running in the background. Refresh this page after a minute to see results. <br/><progress class="progress w-56"></progress></p>
+        </section>
+      {% endif %}
+
+      <p class="mt-6 text-center"><a href="/" class="btn btn-ghost"><button class="btn btn-primary">⬅ Back to Home</button></a></p>
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const input = document.getElementById('journalist-search');
+  const clearBtn = document.getElementById('clear-search');
+  const table = document.getElementById('journalists-table');
+  const tbody = table ? table.tBodies[0] : null;
+  const resultsCount = document.getElementById('results-count');
+
+  if (!tbody) return;
+
+  function normalize(s) {
+    return (s || '').toString().toLowerCase().trim();
+  }
+
+  function updateCount(visible) {
+    resultsCount.textContent = `Showing ${visible} results`;
+  }
+
+  function filterRows() {
+    const q = normalize(input.value);
+    const rows = Array.from(tbody.rows);
+    let visible = 0;
+
+    if (!q) {
+      rows.forEach(r => { r.style.display = ''; visible++; });
+      updateCount(visible);
+      return;
+    }
+
+    rows.forEach(row => {
+      const nameCell = row.querySelector('.name-cell');
+      const topicsCell = row.querySelector('.topics-cell');
+      const keywordsCell = row.querySelector('.keywords-cell');
+
+      const nameText = normalize(nameCell && nameCell.innerText);
+      const topicsText = normalize(topicsCell && topicsCell.innerText);
+      const keywordsText = normalize(keywordsCell && keywordsCell.innerText);
+
+      // match if query is substring of name OR topics OR keywords
+      const matched = nameText.includes(q) || topicsText.includes(q) || keywordsText.includes(q);
+      row.style.display = matched ? '' : 'none';
+      if (matched) visible++;
+    });
+
+    updateCount(visible);
+  }
+
+  // debounce
+  let timer = null;
+  input.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(filterRows, 180);
+  });
+
+  clearBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    input.value = '';
+    filterRows();
+    input.focus();
+  });
+
+  // initialize count
+  updateCount(tbody.rows.length);
+});
+</script>
+
+{% endblock %}
