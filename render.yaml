@@ -1,10 +1,7 @@
-# render.yaml for NewsTrace (https://github.com/vedrecide/newstrace)
-
 services:
   - type: web
     name: newstrace-web
     env: python
-    runtime: python3.9
     branch: main
     plan: free
 
