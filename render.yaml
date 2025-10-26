@@ -13,6 +13,8 @@ services:
         sync: false
       - key: SEARCH_ENGINE_ID
         sync: false
+      - key: DEBUG
+        sync: false
       - key: FLASK_ENV
         value: production
 

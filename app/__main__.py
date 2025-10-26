@@ -23,6 +23,7 @@ from app.core import (
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")
+DEBUG = bool(os.getenv("DEBUG"))
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -173,7 +174,4 @@ def download_csv(filename):
     return send_file(csv_path, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
-    
-
-    
+    app.run(debug=DEBUG, host='0.0.0.0', port=5000)
