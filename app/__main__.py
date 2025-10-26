@@ -595,7 +595,7 @@ def scrape_article(article_url, outlet_name, outlet_domain):
                     logger.error(f"CSV write error: {e}")
 
 
-def crawl_site(home_url, outlet_name="Unknown", max_articles=100, max_threads=12, max_depth=4):
+def crawl_site(home_url, outlet_name="Unknown", max_articles=100, max_threads=12, max_depth=10):
     """
     OPTIMIZED HIGH-SPEED CRAWLER
     """
@@ -788,7 +788,7 @@ def scrape():
     thread = threading.Thread(
         target=crawl_site,
         args=(url, outlet_name),
-        kwargs={'max_articles': 100, 'max_threads': 12, 'max_depth': 4}
+        kwargs={'max_articles': 100, 'max_threads': 12, 'max_depth': 400}
     )
     thread.daemon = True
     thread.start()
