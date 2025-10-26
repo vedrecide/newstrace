@@ -1,4 +1,5 @@
-from flask import Flask, render_template_string, request, render_template
+from flask import Flask, render_template_string, request, render_template, send_file
+import threading, os
 from ddgs import DDGS
 import logging
 from dotenv import load_dotenv
@@ -166,6 +167,10 @@ def journalists():
 
     return render_template("journalists.html", **context)
 
+@app.route("/download_csv/<path:filename>")
+def download_csv(filename):
+    csv_path = f"/data/data/com.termux/files/home/newstrace/{filename}"
+    return send_file(csv_path, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
