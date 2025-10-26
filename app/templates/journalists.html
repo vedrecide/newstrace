@@ -39,12 +39,31 @@
           </div>
         </section>
 
+        <!-- Search bar + meta -->
+        <section class="mb-4">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <label for="journalist-search" class="sr-only">Search journalists</label>
+              <div class="form-control w-full">
+                <div class="input-group flex items-start py-4">
+                  <input id="journalist-search" type="search" placeholder="Search" class="input input-bordered w-full max-w-xl pr-6" />
+                  <button id="clear-search" class="btn btn-ghost" title="Clear search">✕</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-sm text-base-content/60">
+              <span id="results-count" class="font-medium">Showing {{ journalists_dict|length }} results</span>
+            </div>
+          </div>
+        </section>
+
         <section class="mb-6">
           <h2 class="text-xl sm:text-2xl font-semibold mb-3 text-center sm:text-left">Journalists Table</h2>
 
           <!-- responsive wrapper: allows horizontal scroll on small screens -->
           <div class="overflow-x-auto -mx-4 sm:-mx-0 px-4 sm:px-0">
-            <table class="min-w-full table-auto w-full border-collapse">
+            <table id="journalists-table" class="min-w-full table-auto w-full border-collapse">
               <thead class="bg-base-300">
                 <tr>
                   <th class="text-left px-4 py-2">Name</th>
@@ -56,13 +75,13 @@
               <tbody>
                 {% for name, info in journalists_dict.items() %}
                   <tr class="odd:bg-base-100">
-                    <td class="px-4 py-3 align-top">
+                    <td class="px-4 py-3 align-top name-cell">
                       <div class="font-medium break-words">{{ name }}</div>
                     </td>
                     <td class="px-4 py-3 align-top">
                       <div>{{ info.get('article_count', 0) }}</div>
                     </td>
-                    <td class="px-4 py-3 align-top">
+                    <td class="px-4 py-3 align-top topics-cell">
                       {% set topics = info.get('topics', {}) %}
                       {% set topics_slice = (topics|dictsort(true, 'value'))[:3] %}
                       <div class="text-sm leading-snug break-words">
@@ -71,7 +90,7 @@
                         {% endfor %}
                       </div>
                     </td>
-                    <td class="px-4 py-3 align-top">
+                    <td class="px-4 py-3 align-top keywords-cell">
                       {% set keywords = info.get('keywords', {}) %}
                       {% set keywords_slice = (keywords|dictsort(true, 'value'))[:5] %}
                       <div class="text-sm leading-snug break-words">
@@ -108,4 +127,71 @@
     </div>
   </div>
 </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const input = document.getElementById('journalist-search');
+  const clearBtn = document.getElementById('clear-search');
+  const table = document.getElementById('journalists-table');
+  const tbody = table ? table.tBodies[0] : null;
+  const resultsCount = document.getElementById('results-count');
+
+  if (!tbody) return;
+
+  function normalize(s) {
+    return (s || '').toString().toLowerCase().trim();
+  }
+
+  function updateCount(visible) {
+    resultsCount.textContent = `Showing ${visible} results`;
+  }
+
+  function filterRows() {
+    const q = normalize(input.value);
+    const rows = Array.from(tbody.rows);
+    let visible = 0;
+
+    if (!q) {
+      rows.forEach(r => { r.style.display = ''; visible++; });
+      updateCount(visible);
+      return;
+    }
+
+    rows.forEach(row => {
+      const nameCell = row.querySelector('.name-cell');
+      const topicsCell = row.querySelector('.topics-cell');
+      const keywordsCell = row.querySelector('.keywords-cell');
+
+      const nameText = normalize(nameCell && nameCell.innerText);
+      const topicsText = normalize(topicsCell && topicsCell.innerText);
+      const keywordsText = normalize(keywordsCell && keywordsCell.innerText);
+
+      // match if query is substring of name OR topics OR keywords
+      const matched = nameText.includes(q) || topicsText.includes(q) || keywordsText.includes(q);
+      row.style.display = matched ? '' : 'none';
+      if (matched) visible++;
+    });
+
+    updateCount(visible);
+  }
+
+  // debounce
+  let timer = null;
+  input.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(filterRows, 180);
+  });
+
+  clearBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    input.value = '';
+    filterRows();
+    input.focus();
+  });
+
+  // initialize count
+  updateCount(tbody.rows.length);
+});
+</script>
+
 {% endblock %}
