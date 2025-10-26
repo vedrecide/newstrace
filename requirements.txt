@@ -21,3 +21,5 @@ zipp==3.23.0
 python-dotenv
 google-api-python-client
 ddgs
+spacy
+lxml
