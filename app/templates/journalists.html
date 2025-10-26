@@ -130,7 +130,29 @@
         <section class="mb-6 text-center">
           <h2 class="text-3xl font-semibold">Scraping started</h2>
           <p class="text-sm sm:text-base break-words">CSV file: <code>{{ csv_file }}</code></p>
-          <p class="text-sm sm:text-base">Scraping is running in the background. Refresh this page after a minute to see results. <br/><progress class="progress w-56"></progress></p>
+          <p class="text-sm sm:text-base">Scraping is running in the background...</p>
+          <progress class="progress w-56 my-4"></progress>
+          
+          <script>
+            // Check CSV status every 5 seconds
+            function checkStatus() {
+              fetch(`/check_status?csv=${encodeURIComponent("{{ csv_file }}")}`)
+                .then(response => response.json())
+                .then(data => {
+                  if (data.ready) {
+                    window.location.reload();
+                  }
+                });
+            }
+            
+            // Start checking
+            const interval = setInterval(checkStatus, 5000);
+            
+            // Clean up interval when page is closed/navigated away
+            window.addEventListener('beforeunload', () => {
+              clearInterval(interval);
+            });
+          </script>
         </section>
       {% endif %}
 

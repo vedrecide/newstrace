@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request, render_template, send_file
+from flask import Flask, render_template_string, request, render_template, send_file, jsonify
 import threading, os
 from ddgs import DDGS
 import logging
@@ -202,6 +202,36 @@ def download_csv(filename):
     except Exception as e:
         logger.error(f"[DOWNLOAD] Failed to send {filename}: {e}")
         return "Error processing file", 500
+
+@app.route("/check_status")
+def check_status():
+    """Check if CSV file exists and has content.
+    
+    Returns:
+        JSON response indicating if scraping is complete
+    """
+    csv_file = request.args.get("csv")
+    if not csv_file:
+        return jsonify({"ready": False})
+        
+    try:
+        # Get absolute path to project root
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        csv_path = os.path.join(base_dir, csv_file)
+        
+        # Check if file exists and has content (more than just header)
+        if os.path.exists(csv_path):
+            with open(csv_path) as f:
+                # Skip header
+                next(f, None)
+                # Check if there's at least one data row
+                has_data = bool(next(f, None))
+                return jsonify({"ready": has_data})
+                
+        return jsonify({"ready": False})
+    except Exception as e:
+        logger.error(f"Status check failed: {e}")
+        return jsonify({"ready": False})
 
 if __name__ == '__main__':
     app.run(debug=DEBUG, host='0.0.0.0', port=5000)
