@@ -206,7 +206,7 @@ def is_valid_author_name(name, outlet_domain):
         'news', 'times', 'post', 'daily', 'weekly', 'press', 'media', 'network',
         'broadcasting', 'corporation', 'bureau', 'desk', 'team', 'staff',
         'editorial', 'office', 'group', 'agency', 'service', 'channel',
-        'tv', 'radio', 'online', 'digital', 'correspondent', 'reporter'
+        'tv', 'radio', 'online', 'digital', 'correspondent', 'reporter','The Hindu Bureau','TOI'
     ]
     for part in domain_parts:
         if len(part) > 2 and part in name_lower:
