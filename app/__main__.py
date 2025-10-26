@@ -168,7 +168,8 @@ def scrape():
 
 @app.route("/journalists")
 def journalists():
-    csv_path = "/data/data/com.termux/files/home/newstrace/timesofindia.indiatimes.com_data.csv"
+    base_dir = os.getcwd()  # or dirname(__file__) for script location
+    csv_path = os.path.join(base_dir, "timesofindia.indiatimes.com_data.csv")
     data, json_file = csv_to_journalist_json(csv_path)
     
     # Extract only the journalists dict
