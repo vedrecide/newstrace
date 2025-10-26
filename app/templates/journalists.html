@@ -58,6 +58,17 @@
           </div>
         </section>
 
+        <div class="flex justify-between items-center mb-4">
+        <p class="text-sm text-base-content/70">
+          Showing {{ journalists_dict|length }} results
+        </p>
+        
+        <a href="{{ url_for('download_csv', filename=csv_file) }}" 
+          class="btn btn-primary btn-sm">
+          ⬇️ Download CSV
+        </a>
+      </div>
+
         <section class="mb-6">
           <h2 class="text-xl sm:text-2xl font-semibold mb-3 text-center sm:text-left">Journalists Table</h2>
 
