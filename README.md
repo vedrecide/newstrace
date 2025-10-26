@@ -32,7 +32,7 @@ NewsTrace is a lightweight media-intelligence & journalist-profiling prototype t
 ### Usage notes
 - The crawler writes per-outlet CSVs named <sanitized-domain>_data.csv in the project root.
 - Refresh the /journalists page after a minute to see parsed results (scraping runs in background).
-- See [app/__main__.py](app/__main__.py) to tune crawl params (max_articles, max_threads, max_depth).
+- See [`app/__main__.py`](app/__main__.py) to tune crawl params (max_articles, max_threads, max_depth).
 
 ### Files & deps
 - Requirements: [requirements.txt](requirements.txt)
