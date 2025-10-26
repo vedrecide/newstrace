@@ -1,0 +1,25 @@
+# render.yaml for NewsTrace (https://github.com/vedrecide/newstrace)
+
+services:
+  - type: web
+    name: newstrace-web
+    env: python
+    runtime: python3.9
+    branch: main
+    plan: free
+
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python -m app"
+
+    envVars:
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: SEARCH_ENGINE_ID
+        sync: false
+      - key: FLASK_ENV
+        value: production
+
+    healthCheckPath: "/"
+    disk: 512
+    instanceCount: 1
+    instanceType: starter
