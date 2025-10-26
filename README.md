@@ -5,6 +5,9 @@ NewsTrace is a lightweight media-intelligence & journalist-profiling prototype t
 - Crawls the site to extract author/headline pairs and saves them as CSV
 - Builds a simple journalist dashboard and bipartite graph
 
+## 📚 Official Website
+- [https://newstrace-web.onrender.com/](https://newstrace-web.onrender.com/)
+
 ### 🛠 Key files
 - [`app/__main__.py`](app/__main__.py) — Flask app and UI routes
 - [`app.core.crawl_site`](app/core.py) — crawler that discovers article URLs
