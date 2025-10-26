@@ -400,7 +400,7 @@ def http_get(url, headers=None, timeout=10, allow_redirects=True):
         logger.debug(f"[http_get] {url} failed: {e}")
         return None
 
-def crawl_site(home_url, outlet_name="Unknown", max_articles=100, max_threads=12, max_depth=4):
+def crawl_site(home_url, outlet_name="Unknown", max_articles=100, max_threads=12, max_depth=8):
     """
     Optimized crawler that uses scrape_article(...) and updates domain_data.
     """
