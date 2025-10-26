@@ -1,11 +1,5 @@
-import os
-import re
-import json
-import time
-import csv
-import random
-import logging
-import threading
+import os, re, json, time, csv, random, logging, threading, base64, io
+import pandas as pd
 from collections import Counter, defaultdict
 from datetime import datetime
 from urllib.parse import urljoin, urlparse, parse_qs, urlencode
@@ -14,6 +8,8 @@ import requests
 from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import matplotlib.pyplot as plt
+import networkx as nx
 
 # NLP Libraries (optional)
 try:
@@ -519,3 +515,100 @@ def crawl_site(home_url, outlet_name="Unknown", max_articles=100, max_threads=12
     elapsed = time.time() - start_time
     count = domain_data[outlet_domain]['count']
     logger.info(f"✅ Done! {count} articles in {elapsed:.1f}s → {sanitize_filename(outlet_domain)}_data.csv")
+
+def csv_to_journalist_json(csv_path, output_json="journalist_data.json", top_n=10):
+    # Step 1: Load the CSV
+    df = pd.read_csv(csv_path)
+    
+    # Normalize column names
+    df.columns = [c.strip().lower() for c in df.columns]
+    
+    # Validate presence of expected columns
+    required_cols = ["author", "keywords", "topics"]
+    for col in required_cols:
+        if col not in df.columns:
+            raise ValueError(f"Missing column '{col}' in CSV")
+    
+    # Step 2: Group by Author
+    journalist_data = {}
+    grouped = df.groupby("author", dropna=True)
+    
+    for author, group in grouped:
+        # Skip missing or anonymous authors
+        if not isinstance(author, str) or not author.strip():
+            continue
+        
+        # Article count
+        article_count = len(group)
+        
+        # Collect all keywords and topics
+        all_keywords = []
+        all_topics = []
+        
+        for _, row in group.iterrows():
+            if isinstance(row["keywords"], str):
+                kws = [k.strip() for k in row["keywords"].split(",") if k.strip()]
+                all_keywords.extend(kws)
+            if isinstance(row["topics"], str):
+                tps = [t.strip() for t in row["topics"].split(",") if t.strip()]
+                all_topics.extend(tps)
+        
+        # Frequency counts
+        keyword_counts = dict(Counter(all_keywords))
+        topic_counts = dict(Counter(all_topics))
+        
+        journalist_data[author] = {
+            "article_count": article_count,
+            "keywords": keyword_counts,
+            "topics": topic_counts
+        }
+    
+    # Step 3: Identify Top Contributors
+    top_contributors = sorted(
+        [{"name": name, "article_count": data["article_count"]}
+         for name, data in journalist_data.items()],
+        key=lambda x: x["article_count"],
+        reverse=True
+    )[:top_n]
+    
+    # Step 4: Final JSON structure
+    output = {
+        "journalists": journalist_data,
+        "top_contributors": top_contributors
+    }
+    
+    # Step 5: Write to JSON file
+    with open(output_json, "w", encoding="utf-8") as f:
+        json.dump(output, f, ensure_ascii=False, indent=4)
+    
+    print(f"✅ JSON file saved as: {output_json}")
+    print(f"📈 Top {top_n} contributors:")
+    for t in top_contributors:
+        print(f"  {t['name']}: {t['article_count']} articles")
+    return output, output_json
+
+def build_bipartite_graph(journalist_data):
+    B = nx.Graph()
+    
+    # Add nodes
+    for journalist, info in journalist_data.items():
+        B.add_node(journalist, bipartite=0)
+        for topic in info["topics"]:
+            B.add_node(topic, bipartite=1)
+            B.add_edge(journalist, topic, weight=info["topics"][topic])
+    
+    # Draw the graph
+    plt.figure(figsize=(12, 8))
+    pos = nx.spring_layout(B, k=0.5)
+    nx.draw(
+        B, pos, with_labels=True, node_size=1500, node_color=['skyblue' if B.nodes[n]['bipartite']==0 else 'lightgreen' for n in B.nodes()],
+        edge_color='gray', font_size=5
+    )
+    
+    # Save to base64 to embed in HTML
+    img = io.BytesIO()
+    plt.savefig(img, format='png', bbox_inches='tight')
+    plt.close()
+    img.seek(0)
+    graph_url = base64.b64encode(img.getvalue()).decode()
+    return graph_url

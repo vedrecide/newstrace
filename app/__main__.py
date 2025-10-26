@@ -10,6 +10,8 @@ from bs4 import BeautifulSoup
 
 # Import core scraper/crawler utilities and variables
 from app.core import (
+    build_bipartite_graph,
+    csv_to_journalist_json,
     extract_domain,
     sanitize_filename,
     extract_keywords_nlp,
@@ -163,6 +165,39 @@ def scrape():
     thread.start()
     
     return render_template_string(html, url=url, title=title, paragraphs=paragraphs, csv_file=csv_file)
+
+@app.route("/journalists")
+def journalists():
+    csv_path = "/data/data/com.termux/files/home/newstrace/timesofindia.indiatimes.com_data.csv"
+    data, json_file = csv_to_journalist_json(csv_path)
+    
+    # Extract only the journalists dict
+    journalists_dict = data['journalists']
+    
+    # Get top contributors
+    top_contributors = sorted(journalists_dict.items(), key=lambda x: x[1]['article_count'], reverse=True)[:5]
+    
+    # Build graph
+    graph_img = build_bipartite_graph(journalists_dict)
+    
+    # HTML
+    html = "<h1>Journalists Overview</h1>"
+    html += "<h2>Top Contributors</h2><ul>"
+    for name, info in top_contributors:
+        html += f"<li>{name}: {info['article_count']} articles</li>"
+    html += "</ul>"
+    
+    html += "<h2>Journalists Table</h2><table border='1'><tr><th>Name</th><th>Articles</th><th>Top Topics</th><th>Top Keywords</th></tr>"
+    for name, info in journalists_dict.items():  # <- FIXED HERE
+        top_topics = ", ".join([f"{k}({v})" for k, v in sorted(info["topics"].items(), key=lambda x: -x[1])[:3]])
+        top_keywords = ", ".join([f"{k}({v})" for k, v in sorted(info["keywords"].items(), key=lambda x: -x[1])[:5]])
+        html += f"<tr><td>{name}</td><td>{info['article_count']}</td><td>{top_topics}</td><td>{top_keywords}</td></tr>"
+    html += "</table>"
+    
+    html += "<h2>Journalist-Topic Graph</h2>"
+    html += f"<img src='data:image/png;base64,{graph_img}'/>"
+    
+    return html
 
 
 if __name__ == '__main__':
