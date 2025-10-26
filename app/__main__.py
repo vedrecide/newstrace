@@ -170,8 +170,38 @@ def journalists():
 
 @app.route("/download_csv/<path:filename>")
 def download_csv(filename):
-    csv_path = f"/data/data/com.termux/files/home/newstrace/{filename}"
-    return send_file(csv_path, as_attachment=True)
+    """Download a CSV file from the server.
+    
+    Args:
+        filename: Name of the CSV file to download (e.g., domain_data.csv)
+    
+    Returns:
+        File download response or 404 if file not found
+    """
+    try:
+        # Ensure the filename has .csv extension
+        if not filename.endswith('.csv'):
+            return "Invalid file type", 400
+            
+        # Get absolute path to project root
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        csv_path = os.path.join(base_dir, filename)
+        
+        # Verify file exists and is a CSV
+        if not os.path.exists(csv_path):
+            return f"File {filename} not found", 404
+            
+        # Send file securely
+        return send_file(
+            csv_path,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        logger.error(f"[DOWNLOAD] Failed to send {filename}: {e}")
+        return "Error processing file", 500
 
 if __name__ == '__main__':
     app.run(debug=DEBUG, host='0.0.0.0', port=5000)
