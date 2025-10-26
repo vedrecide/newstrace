@@ -66,6 +66,8 @@ def journalists():
                 svc = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
                 resp = svc.cse().list(q=query, cx=SEARCH_ENGINE_ID, num=5).execute()
                 items = resp.get("items", []) or []
+                if not items:
+                    logger.warning(f"[SEARCH] No results returned from Google for query: {query}")
                 for r in items:
                     u = r.get("link", "")
                     title = r.get("title", "")
@@ -76,13 +78,14 @@ def journalists():
                         logger.info(f"[SEARCH] Google matched: {u}")
                         break
         except Exception as e:
-            logger.debug(f"[SEARCH] Google failed: {e}")
+            logger.error(f"[SEARCH] Google Custom Search failed: {e}")
 
         # DuckDuckGo fallback
         if not result_url:
             try:
                 with DDGS() as ddgs:
-                    ddg_results = list(ddgs.text(query, max_results=10))
+                    _ddg_results = list(ddgs.text(query, max_results=10))
+                    ddg_results = list(filter(lambda i: "wiki" not in i["href"], _ddg_results))
                     for item in ddg_results:
                         if "href" not in item or "title" not in item:
                             continue

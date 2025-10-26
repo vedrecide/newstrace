@@ -116,10 +116,10 @@
         {% endif %}
 
       {% else %}
-        <section class="mb-6">
-          <h2 class="text-2xl font-semibold">Scraping started</h2>
+        <section class="mb-6 text-center">
+          <h2 class="text-3xl font-semibold">Scraping started</h2>
           <p class="text-sm sm:text-base break-words">CSV file: <code>{{ csv_file }}</code></p>
-          <p class="text-sm sm:text-base">Scraping is running in the background. Refresh this page after a minute to see results.</p>
+          <p class="text-sm sm:text-base">Scraping is running in the background. Refresh this page after a minute to see results. <br/><progress class="progress w-56"></progress></p>
         </section>
       {% endif %}
 
