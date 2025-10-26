@@ -18,9 +18,6 @@ from app.core import (
     domain_data,
 )
 
-import os
-import threading
-
 # Load .env
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -34,15 +31,33 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
+    """Render the home page.
+
+    Returns:
+        A rendered template for the index/home page.
+    """
     return render_template("index.html")
 
 
 @app.route("/journalists", methods=["GET", "POST"])
 def journalists():
-    """
-    Combined route: accepts ?query=OutletName OR ?url=OutletHomepage
-    Supports GET and POST (form submissions). Starts background crawl and shows
-    dashboard if CSV exists.
+    """Handle the combined search and dashboard route.
+
+    This endpoint accepts either:
+      - query: a media outlet name (will try to detect the official site using
+        Google Custom Search and DuckDuckGo), or
+      - url: the outlet's homepage (will be used directly).
+
+    Behavior:
+      - If neither query nor url is provided, returns a short help message.
+      - Detects the outlet homepage when a query is provided.
+      - Starts a background crawl (crawl_site) for the detected URL.
+      - If a CSV for the outlet already exists, converts it to JSON and renders
+        the journalists dashboard. Otherwise returns a "scraping started" page.
+
+    Returns:
+        Rendered template 'journalists.html' with context describing the outlet,
+        CSV location, and (optionally) parsed journalist data and graph.
     """
     logger.info(f"[ROUTE] /journalists called with method={request.method}")
 

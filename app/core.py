@@ -42,6 +42,18 @@ USER_AGENTS = [
 ]
 
 def extract_domain(url):
+    """Return the normalized domain for a URL.
+
+    Args:
+        url (str): A full URL.
+
+    Returns:
+        str: Lowercased domain (without 'www.') or 'unknown' if parsing fails.
+
+    Example:
+        >>> extract_domain('https://www.example.com/path')
+        'example.com'
+    """
     try:
         domain = urlparse(url).netloc.lower()
         domain = domain.replace('www.', '')
@@ -50,12 +62,32 @@ def extract_domain(url):
         return "unknown"
 
 def sanitize_filename(domain):
-    """Convert domain to valid filename"""
+    """Convert a domain or string into a safe filename.
+
+    Replaces characters that are not filesystem-friendly with underscores.
+
+    Args:
+        domain (str): Input string (typically a domain).
+
+    Returns:
+        str: Sanitized filename-safe string.
+    """
     sanitized = re.sub(r'[^\w\-.]', '_', domain)
     return sanitized
 
 def extract_keywords_fallback(text):
-    """Fallback keyword extraction"""
+    """Extract keyword-like tokens from text using simple heuristics.
+
+    This function is a fast fallback used when a proper NLP library is not
+    available. It removes common stopwords and returns a ranked list of
+    candidate keywords.
+
+    Args:
+        text (str): Input text (headline, title, etc.).
+
+    Returns:
+        list[str]: Top candidate keywords (strings), ordered by simple frequency.
+    """
     if not text:
         return []
     stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
@@ -68,7 +100,17 @@ def extract_keywords_fallback(text):
     return [word for word, _ in word_freq.most_common(10)]
 
 def extract_keywords_nlp(text):
-    """Extract keywords using spaCy if available, otherwise fallback"""
+    """Extract keywords and named entities using spaCy when available.
+
+    Falls back to extract_keywords_fallback(text) if spaCy is not available or
+    the extraction fails.
+
+    Args:
+        text (str): Input text to analyze.
+
+    Returns:
+        list[str]: List of unique, prioritized keyword/phrase candidates.
+    """
     if not NLP_AVAILABLE or not text:
         return extract_keywords_fallback(text)
     try:
@@ -101,7 +143,20 @@ def extract_keywords_nlp(text):
         return extract_keywords_fallback(text)
 
 def extract_topics(text, keywords):
-    """Extract topics from text"""
+    """Map headline/keywords to coarse topic categories.
+
+    Uses a simple keyword-to-topic mapping to derive one or more topics for a
+    piece of text. This is intentionally lightweight (rule-based) to avoid
+    heavy NLP dependence.
+
+    Args:
+        text (str): Text to analyze (headline or title).
+        keywords (list[str]): Pre-extracted keywords to consider.
+
+    Returns:
+        list[str]: One or more topic labels (e.g., ['Politics', 'Economy']) or
+                   ['General'] if no specific topic matches.
+    """
     topics = set()
     topic_keywords = {
         'Politics': ['election', 'government', 'minister', 'parliament', 'policy', 'vote', 'president', 'congress', 'senate', 'political'],
@@ -123,8 +178,18 @@ def extract_topics(text, keywords):
     return list(topics) if topics else ['General']
 
 def is_valid_author_name(name, outlet_domain):
-    """
-    Validate author-like text and filter out placeholders / org names / timestamps.
+    """Validate whether a scraped string looks like a plausible author name.
+
+    Filters out timestamps, organization names, single-letter tokens, bylines,
+    and other common non-author strings. Uses heuristics around capitalization,
+    token counts and domain/name overlap.
+
+    Args:
+        name (str): Candidate author string (may include 'By', timestamps, etc.).
+        outlet_domain (str): Outlet domain used to filter org names similar to domain.
+
+    Returns:
+        bool: True if string likely represents a real author name, False otherwise.
     """
     if not name or len(name) < 3:
         return False
@@ -178,9 +243,25 @@ def is_valid_author_name(name, outlet_domain):
     return False
 
 def scrape_article(article_url, outlet_name, outlet_domain):
-    """
-    Enhanced article scraper with intelligent author filtering.
-    Writes results to <sanitized_domain>_data.csv and updates domain_data.
+    """Scrape an article page and extract author(s), headline, keywords and topics.
+
+    The function:
+      - Fetches the URL using a shared HTTP session with retries.
+      - Extracts headline using structured data (ld+json), meta tags, and common
+        heading selectors.
+      - Extracts author names from ld+json, rel="author" links, meta author tags,
+        common classes/attributes and author-profile links.
+      - Filters candidate author strings with is_valid_author_name.
+      - Extracts keywords and topics and appends rows to a per-outlet CSV file.
+      - Updates domain_data[outlet_domain] to keep thread-safe counts and dedupe.
+
+    Args:
+        article_url (str): Full URL of the article to scrape.
+        outlet_name (str): Human-friendly outlet name (used in CSV row).
+        outlet_domain (str): Normalized domain used for filenames and filtering.
+
+    Returns:
+        None
     """
     headers = {"User-Agent": random.choice(USER_AGENTS)}
     max_retries = 2
@@ -391,7 +472,20 @@ SESSION.mount("http://", _adapter)
 SESSION.mount("https://", _adapter)
 
 def http_get(url, headers=None, timeout=10, allow_redirects=True):
-    """Thread-safe helper using SESSION with retries. Returns Response or None."""
+    """Perform an HTTP GET using the shared SESSION with retry/backoff.
+
+    Wrapper around requests.Session to centralize retries, timeouts and user
+    agent selection.
+
+    Args:
+        url (str): URL to fetch.
+        headers (dict|None): Optional additional headers.
+        timeout (int|float): Request timeout in seconds.
+        allow_redirects (bool): Follow redirects when True.
+
+    Returns:
+        requests.Response|None: The response object on success, otherwise None.
+    """
     try:
         hdrs = headers or {"User-Agent": random.choice(USER_AGENTS)}
         resp = SESSION.get(url, headers=hdrs, timeout=timeout, allow_redirects=allow_redirects)
@@ -400,9 +494,25 @@ def http_get(url, headers=None, timeout=10, allow_redirects=True):
         logger.debug(f"[http_get] {url} failed: {e}")
         return None
 
-def crawl_site(home_url, outlet_name="Unknown", max_articles=100, max_threads=12, max_depth=8):
-    """
-    Optimized crawler that uses scrape_article(...) and updates domain_data.
+def crawl_site(home_url, outlet_name="Unknown", max_articles=100, max_threads=12, max_depth=4):
+    """Crawl an outlet site to discover article pages and extract journalist data.
+
+    The crawler:
+      - Performs breadth-first discovery of same-domain links up to max_depth.
+      - Prioritizes likely article/profile URLs using indicator regexes.
+      - Uses a thread pool and http_get/scrape_article to fetch and parse pages.
+      - Writes results to per-outlet CSV and updates domain_data state.
+      - Stops when max_articles author/headline pairs (or deduped count) reached.
+
+    Args:
+        home_url (str): Starting homepage URL for the outlet.
+        outlet_name (str): Outlet display name used in CSV rows.
+        max_articles (int): Maximum number of article entries to collect.
+        max_threads (int): Maximum worker threads to run concurrently.
+        max_depth (int): Maximum link depth to follow from the homepage.
+
+    Returns:
+        None
     """
     visited_urls = set()
     failed_urls = set()
