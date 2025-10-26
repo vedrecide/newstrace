@@ -20,6 +20,3 @@ services:
         value: production
 
     healthCheckPath: "/"
-    disk: 512
-    instanceCount: 1
-    instanceType: starter
